@@ -1059,41 +1059,119 @@
       });
     }
 
-    function updateSummary(){
-      const records = subjects.map(s=>({s,r:getRecord(s.id)}));
-      const required = records.filter(x=>x.s.t==='required');
-      const requiredTotal = required.length;
-      const requiredRegular = required.filter(x=>x.r.status==='regular'||x.r.status==='final').length;
-      const requiredFinals = required.filter(x=>x.r.status==='final').length;
-      const optionalHours = records
-        .filter(x=>x.s.t==='optional'&&(x.r.status==='regular'||x.r.status==='final'))
-        .reduce((sum,x)=>sum+x.s.h,0);
-      const pfo = records.find(x=>x.s.n==='Práctica Final Obligatoria');
+    function updateSummary() {
+  const records = subjects.map((subject) => ({
+    subject,
+    record: getRecord(subject.id),
+  }));
 
-      const regularPercent = Math.round(requiredRegular/requiredTotal*100);
-      const finalPercent = Math.round(requiredFinals/requiredTotal*100);
-      const optionalPercent = Math.min(100, Math.round(optionalHours/210*100));
+  // PFO fica separada e não entra no total de matérias obrigatórias.
+  const pfo = records.find(
+    ({ subject }) => subject.n === "Práctica Final Obligatoria"
+  );
 
-      $('regularCount').textContent = `${requiredRegular} / ${requiredTotal}`;
-      $('regularNote').textContent = `${regularPercent}% das obrigatórias cursadas`;
-      $('regularBar').style.width = `${regularPercent}%`;
+  // Conta somente matérias obrigatórias, excluindo optativas e PFO.
+  const requiredSubjects = records.filter(
+    ({ subject }) =>
+      subject.t === "required" &&
+      subject.n !== "Práctica Final Obligatoria"
+  );
 
-      $('finalCount').textContent = `${requiredFinals} / ${requiredTotal}`;
-      $('finalNote').textContent = `${finalPercent}% das obrigatórias com final`;
-      $('finalBar').style.width = `${finalPercent}%`;
-      $('heroPercent').textContent = `${finalPercent}%`;
+  const requiredTotal = requiredSubjects.length;
 
-      $('optionalHours').textContent = `${optionalHours} / 210 h`;
-      $('optionalBar').style.width = `${optionalPercent}%`;
-      $('optionalNote').textContent = optionalHours>=210
-        ? `Meta alcançada · ${optionalHours-210} h excedentes`
-        : `Faltam ${210-optionalHours} horas`;
+  const requiredCompleted = requiredSubjects.filter(
+    ({ record }) =>
+      record.status === "regular" || record.status === "final"
+  ).length;
 
-      const pfoStatus = pfo?.r.status || 'pending';
-      $('pfoStatus').textContent = pfoStatus==='final' ? 'Concluída' : pfoStatus==='regular' ? 'Em andamento' : 'Pendente';
-      $('pfoNote').textContent = pfoStatus==='final' ? 'Prática final concluída' : pfoStatus==='regular' ? 'Prática final iniciada' : 'Ainda não iniciada';
-      $('pfoBar').style.width = pfoStatus==='final' ? '100%' : pfoStatus==='regular' ? '50%' : '0%';
-    }
+  const requiredFinals = requiredSubjects.filter(
+    ({ record }) => record.status === "final"
+  ).length;
+
+  // Optativas não entram na quantidade de matérias.
+  // Somam apenas a carga horária das optativas cursadas/aprovadas.
+  const optionalHours = records
+    .filter(
+      ({ subject, record }) =>
+        subject.t === "optional" &&
+        (record.status === "regular" || record.status === "final")
+    )
+    .reduce((total, { subject }) => total + Number(subject.h || 0), 0);
+
+  const requiredCompletedPercent =
+    requiredTotal > 0
+      ? Math.round((requiredCompleted / requiredTotal) * 100)
+      : 0;
+
+  const requiredFinalPercent =
+    requiredTotal > 0
+      ? Math.round((requiredFinals / requiredTotal) * 100)
+      : 0;
+
+  const optionalPercent = Math.min(
+    100,
+    Math.round((optionalHours / 210) * 100)
+  );
+
+  // Card: matérias obrigatórias cursadas.
+  $("regularCount").textContent =
+    `${requiredCompleted} / ${requiredTotal}`;
+
+  $("regularNote").textContent =
+    `${requiredCompletedPercent}% das obrigatórias cursadas`;
+
+  $("regularBar").style.width =
+    `${requiredCompletedPercent}%`;
+
+  // Card: finais das matérias obrigatórias.
+  $("finalCount").textContent =
+    `${requiredFinals} / ${requiredTotal}`;
+
+  $("finalNote").textContent =
+    `${requiredFinalPercent}% das obrigatórias com final`;
+
+  $("finalBar").style.width =
+    `${requiredFinalPercent}%`;
+
+  $("heroPercent").textContent =
+    `${requiredFinalPercent}%`;
+
+  // Card: somente horas optativas.
+  $("optionalHours").textContent =
+    `${optionalHours} / 210 h`;
+
+  $("optionalBar").style.width =
+    `${optionalPercent}%`;
+
+  $("optionalNote").textContent =
+    optionalHours >= 210
+      ? `Meta alcançada · ${optionalHours - 210} h excedentes`
+      : `Faltam ${210 - optionalHours} horas`;
+
+  // Card separado da PFO.
+  const pfoStatus = pfo?.record.status || "pending";
+
+  $("pfoStatus").textContent =
+    pfoStatus === "final"
+      ? "Concluída"
+      : pfoStatus === "regular"
+        ? "Em andamento"
+        : "Pendente";
+
+  $("pfoNote").textContent =
+    pfoStatus === "final"
+      ? "Prática final concluída"
+      : pfoStatus === "regular"
+        ? "Prática final iniciada"
+        : "Ainda não iniciada";
+
+  $("pfoBar").style.width =
+    pfoStatus === "final"
+      ? "100%"
+      : pfoStatus === "regular"
+        ? "50%"
+        : "0%";
+}
 
     function updateUI(){ updateSummary(); render(); }
     function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove('show'),2600); }
