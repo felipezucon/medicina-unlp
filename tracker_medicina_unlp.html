@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>Tracker Medicina UNLP</title>
+  <style>
+    :root {
+      --bg: #f4f7f7;
+      --surface: rgba(255,255,255,.92);
+      --surface-2: #ffffff;
+      --text: #16302d;
+      --muted: #647773;
+      --line: #dbe7e4;
+      --primary: #0f766e;
+      --primary-2: #14b8a6;
+      --primary-soft: #dff7f3;
+      --blue: #2563eb;
+      --blue-soft: #e8f0ff;
+      --green: #16834b;
+      --green-soft: #e6f8ed;
+      --amber: #b66b00;
+      --amber-soft: #fff4da;
+      --danger: #b42318;
+      --shadow: 0 18px 48px rgba(23, 61, 56, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(20,184,166,.14), transparent 28rem),
+        radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 24rem),
+        var(--bg);
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app { width: min(1440px, calc(100% - 28px)); margin: 0 auto; padding: 26px 0 56px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: 30px;
+      color: white;
+      background: linear-gradient(130deg, #0b5f59 0%, #0f766e 50%, #168f85 100%);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 300px; height: 300px;
+      right: -90px; top: -130px;
+      border: 42px solid rgba(255,255,255,.08);
+      border-radius: 50%;
+    }
+    .hero-row { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; position: relative; z-index: 1; }
+    .eyebrow { margin: 0 0 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: .76rem; opacity: .8; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.7rem); line-height: .98; letter-spacing: -.05em; }
+    .subtitle { max-width: 760px; margin: 14px 0 0; font-size: 1.02rem; line-height: 1.6; opacity: .88; }
+    .hero-badge { flex: none; display: grid; place-items: center; min-width: 132px; min-height: 132px; padding: 16px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.1); backdrop-filter: blur(10px); border-radius: 25px; text-align: center; }
+    .hero-badge strong { display: block; font-size: 2rem; }
+    .hero-badge span { font-size: .82rem; opacity: .8; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin: 18px 0; }
+    .card { background: var(--surface); border: 1px solid rgba(219,231,228,.9); border-radius: var(--radius); box-shadow: 0 8px 30px rgba(23,61,56,.05); }
+    .metric { padding: 20px; }
+    .metric-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; color: var(--muted); font-weight: 750; font-size: .88rem; }
+    .metric-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--primary-soft); font-size: 1.2rem; }
+    .metric-value { margin-top: 10px; font-size: clamp(1.65rem, 3vw, 2.35rem); font-weight: 900; letter-spacing: -.04em; }
+    .metric-note { margin-top: 4px; color: var(--muted); font-size: .82rem; }
+    .progress { height: 9px; margin-top: 13px; overflow: hidden; background: #e9efed; border-radius: 999px; }
+    .progress > div { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--primary), var(--primary-2)); transition: width .35s ease; }
+
+    .toolbar { padding: 16px; display: grid; grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(140px,.55fr)) auto; gap: 10px; align-items: center; position: sticky; top: 10px; z-index: 20; backdrop-filter: blur(18px); }
+    .field { width: 100%; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); border-radius: 13px; padding: 12px 13px; outline: none; transition: .2s; }
+    .field:focus { border-color: var(--primary-2); box-shadow: 0 0 0 4px rgba(20,184,166,.12); }
+    .actions { display: flex; gap: 8px; }
+    .btn { border: 0; border-radius: 12px; padding: 11px 13px; font-weight: 800; color: var(--text); background: #edf3f1; white-space: nowrap; }
+    .btn:hover { filter: brightness(.97); transform: translateY(-1px); }
+    .btn.primary { color: white; background: var(--primary); }
+    .btn.danger { color: var(--danger); background: #fff0ee; }
+
+    .content { margin-top: 18px; display: grid; gap: 18px; }
+    .year-section { overflow: hidden; }
+    .year-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 19px 22px; border-bottom: 1px solid var(--line); }
+    .year-title { display: flex; align-items: center; gap: 12px; }
+    .year-number { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: var(--primary); color: #fff; font-weight: 900; }
+    .year-title h2 { margin: 0; font-size: 1.15rem; }
+    .year-title p { margin: 3px 0 0; color: var(--muted); font-size: .82rem; }
+    .year-stats { color: var(--muted); font-weight: 750; font-size: .84rem; text-align: right; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 920px; }
+    th { padding: 12px 16px; text-align: left; color: var(--muted); background: #f8fbfa; border-bottom: 1px solid var(--line); font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 14px 16px; border-bottom: 1px solid #edf2f1; vertical-align: middle; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr { transition: background .2s; }
+    tbody tr:hover { background: #fbfdfc; }
+    tbody tr.final-ok { background: linear-gradient(90deg, rgba(230,248,237,.82), rgba(255,255,255,.35)); }
+    tbody tr.regular-ok:not(.final-ok) { background: linear-gradient(90deg, rgba(232,240,255,.75), rgba(255,255,255,.35)); }
+    .subject-name { font-weight: 850; }
+    .subject-meta { margin-top: 4px; color: var(--muted); font-size: .78rem; }
+    .pill { display: inline-flex; align-items: center; padding: 6px 9px; border-radius: 999px; font-weight: 800; font-size: .75rem; }
+    .pill.required { color: #22524d; background: #e7f1ef; }
+    .pill.optional { color: #895000; background: var(--amber-soft); }
+    .status-group { display: inline-grid; grid-template-columns: repeat(3, max-content); gap: 6px; }
+    .status-btn { border: 1px solid var(--line); background: white; color: var(--muted); padding: 8px 10px; border-radius: 10px; font-weight: 800; font-size: .76rem; }
+    .status-btn[data-state="pending"].active { color: #5d6866; background: #edf1f0; border-color: #d8e0de; }
+    .status-btn[data-state="regular"].active { color: var(--blue); background: var(--blue-soft); border-color: #c8d8ff; }
+    .status-btn[data-state="final"].active { color: var(--green); background: var(--green-soft); border-color: #bce8ca; }
+    .fallback-status label { display:inline-flex; align-items:center; gap:5px; }
+    .fallback-status input { accent-color: var(--primary); }
+    .date-input { width: 135px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: white; }
+    .note-input { min-width: 150px; width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: white; }
+
+    .empty { display: none; padding: 42px 20px; text-align: center; color: var(--muted); }
+    .footnote { margin: 18px 2px 0; color: var(--muted); font-size: .82rem; line-height: 1.55; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 50; max-width: 330px; padding: 13px 16px; color: white; background: #16302d; border-radius: 13px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none; transition: .25s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .hidden { display: none !important; }
+
+    @media (max-width: 1050px) {
+      .summary-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .toolbar { grid-template-columns: 1fr 1fr 1fr; }
+      .toolbar .search { grid-column: 1 / -1; }
+      .actions { justify-content: flex-end; }
+    }
+    @media (max-width: 680px) {
+      .app { width: min(100% - 18px, 1440px); padding-top: 9px; }
+      .hero { padding: 23px 20px; border-radius: 23px; }
+      .hero-row { display: block; }
+      .hero-badge { margin-top: 20px; width: 100%; min-height: 88px; display: flex; justify-content: center; gap: 8px; }
+      .hero-badge strong { font-size: 1.5rem; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .toolbar { position: static; grid-template-columns: 1fr; }
+      .toolbar .search { grid-column: auto; }
+      .actions { display: grid; grid-template-columns: repeat(3,1fr); }
+      .year-header { align-items: flex-start; }
+      .year-stats { max-width: 120px; }
+    }
+    @media print {
+      body { background: white; }
+      .app { width: 100%; padding: 0; }
+      .hero, .toolbar, .actions, .footnote { display: none !important; }
+      .summary-grid { grid-template-columns: repeat(4,1fr); }
+      .card { box-shadow: none; break-inside: avoid; }
+      .content { gap: 12px; }
+      .year-section { break-inside: avoid; }
+      table { min-width: 0; font-size: 10px; }
+      th, td { padding: 7px; }
+      .note-input, .date-input { border: 0; padding: 0; }
+      .status-btn:not(.active) { display: none; }
+      .status-btn.active { border: 0; padding: 3px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-row">
+        <div>
+          <p class="eyebrow">Facultad de Ciencias Médicas · UNLP</p>
+          <h1>Meu caminho em Medicina</h1>
+          <p class="subtitle">Marque cada matéria como pendente, cursada/regularizada ou com final aprovado. O painel salva tudo automaticamente neste navegador.</p>
+        </div>
+        <div class="hero-badge"><strong id="heroPercent">0%</strong><span>do percurso com final aprovado</span></div>
+      </div>
+    </header>
+
+    <section class="summary-grid" aria-label="Resumo do progresso">
+      <article class="card metric">
+        <div class="metric-top"><span>Matérias cursadas</span><span class="metric-icon">📘</span></div>
+        <div class="metric-value" id="regularCount">0 / 42</div>
+        <div class="metric-note" id="regularNote">Nenhuma marcada ainda</div>
+        <div class="progress"><div id="regularBar"></div></div>
+      </article>
+      <article class="card metric">
+        <div class="metric-top"><span>Finais aprovados</span><span class="metric-icon">🎓</span></div>
+        <div class="metric-value" id="finalCount">0 / 42</div>
+        <div class="metric-note" id="finalNote">A jornada começa no primeiro clique</div>
+        <div class="progress"><div id="finalBar"></div></div>
+      </article>
+      <article class="card metric">
+        <div class="metric-top"><span>Optativas cursadas</span><span class="metric-icon">🧩</span></div>
+        <div class="metric-value" id="optionalRegularHours">0 h</div>
+        <div class="metric-note">Horas de optativas regularizadas</div>
+        <div class="progress"><div id="optionalRegularBar"></div></div>
+      </article>
+      <article class="card metric">
+        <div class="metric-top"><span>Optativas com final</span><span class="metric-icon">⏳</span></div>
+        <div class="metric-value" id="optionalFinalHours">0 / 210 h</div>
+        <div class="metric-note" id="optionalNote">Faltam 210 horas</div>
+        <div class="progress"><div id="optionalFinalBar"></div></div>
+      </article>
+    </section>
+
+    <section class="card toolbar">
+      <input class="field search" id="search" type="search" placeholder="Buscar matéria…" />
+      <select class="field" id="yearFilter"><option value="all">Todos os anos</option></select>
+      <select class="field" id="typeFilter"><option value="all">Obrigatórias e optativas</option><option value="required">Obrigatórias</option><option value="optional">Optativas</option></select>
+      <select class="field" id="statusFilter"><option value="all">Todos os status</option><option value="pending">Não cursei</option><option value="regular">Cursada</option><option value="final">Final aprovado</option></select>
+      <div class="actions">
+        <button class="btn" id="exportBtn" title="Baixar uma cópia dos seus dados">Exportar</button>
+        <button class="btn" id="importBtn" title="Restaurar uma cópia">Importar</button>
+        <button class="btn danger" id="resetBtn" title="Apagar todas as marcações">Zerar</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <section id="content" class="content">
+<article class="card year-section" data-year="1">
+      <div class="year-header">
+        <div class="year-title"><span class="year-number">1</span><div><h2>1º ano</h2><p>7 matérias</p></div></div>
+        <div class="year-stats">0 com final aprovado</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+        <tbody><tr data-id="s1">
+        <td><div class="subject-name">Anatomía</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>250 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s1" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s1"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s1"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s2">
+        <td><div class="subject-name">Biología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s2" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s2"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s2"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s3">
+        <td><div class="subject-name">Ciencias Sociales y Medicina</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s3" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s3"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s3"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s4">
+        <td><div class="subject-name">Citología, Histología y Embriología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>190 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s4" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s4"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s4"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s5">
+        <td><div class="subject-name">Informática Básica</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s5" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s5"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s5"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s6">
+        <td><div class="subject-name">Ciencias Exactas</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s6" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s6"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s6"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s7">
+        <td><div class="subject-name">Seminario en Investigación Científica</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s7" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s7"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s7"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr></tbody>
+      </table></div>
+    </article>
+<article class="card year-section" data-year="2">
+      <div class="year-header">
+        <div class="year-title"><span class="year-number">2</span><div><h2>2º ano</h2><p>6 matérias</p></div></div>
+        <div class="year-stats">0 com final aprovado</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+        <tbody><tr data-id="s8">
+        <td><div class="subject-name">Bioquímica y Biología Molecular</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>250 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s8" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s8"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s8"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s9">
+        <td><div class="subject-name">Epidemiología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s9" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s9"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s9"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s10">
+        <td><div class="subject-name">Fisiología y Física Biológica</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>250 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s10" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s10"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s10"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s11">
+        <td><div class="subject-name">Psicología Médica</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s11" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s11"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s11"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s12">
+        <td><div class="subject-name">Ecología Humana y Promoción de la Salud</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s12" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s12"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s12"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s13">
+        <td><div class="subject-name">Historia de la Medicina</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s13" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s13"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s13"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr></tbody>
+      </table></div>
+    </article>
+<article class="card year-section" data-year="3">
+      <div class="year-header">
+        <div class="year-title"><span class="year-number">3</span><div><h2>3º ano</h2><p>12 matérias</p></div></div>
+        <div class="year-stats">0 com final aprovado</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+        <tbody><tr data-id="s14">
+        <td><div class="subject-name">Farmacología Básica</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>140 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s14" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s14"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s14"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s15">
+        <td><div class="subject-name">Informática Médica</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s15" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s15"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s15"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s16">
+        <td><div class="subject-name">Microbiología y Parasitología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>150 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s16" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s16"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s16"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s17">
+        <td><div class="subject-name">Patología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>210 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s17" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s17"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s17"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s18">
+        <td><div class="subject-name">Salud y Medicina Comunitaria</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s18" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s18"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s18"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s19">
+        <td><div class="subject-name">Semiología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>200 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s19" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s19"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s19"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s20">
+        <td><div class="subject-name">Inglés Médico</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s20" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s20"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s20"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s21">
+        <td><div class="subject-name">Genética</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s21" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s21"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s21"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s22">
+        <td><div class="subject-name">Inmunología</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s22" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s22"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s22"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s23">
+        <td><div class="subject-name">Salud Ambiental</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s23" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s23"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s23"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s24">
+        <td><div class="subject-name">Estadística Aplicada a Ciencias de la Salud</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s24" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s24"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s24"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s25">
+        <td><div class="subject-name">Neuroanatomía Semiológica</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Trimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s25" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s25"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s25"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr></tbody>
+      </table></div>
+    </article>
+<article class="card year-section" data-year="4">
+      <div class="year-header">
+        <div class="year-title"><span class="year-number">4</span><div><h2>4º ano</h2><p>17 matérias</p></div></div>
+        <div class="year-stats">0 com final aprovado</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+        <tbody><tr data-id="s26">
+        <td><div class="subject-name">Cirugía I</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>130 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s26" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s26"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s26"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s27">
+        <td><div class="subject-name">Dermatología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s27" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s27"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s27"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s28">
+        <td><div class="subject-name">Diagnóstico y Terapéutica por Imágenes Módulo 1</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s28" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s28"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s28"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s29">
+        <td><div class="subject-name">Farmacología Aplicada</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>100 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s29" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s29"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s29"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s30">
+        <td><div class="subject-name">Infectología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>80 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s30" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s30"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s30"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s31">
+        <td><div class="subject-name">Medicina Interna I</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>210 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s31" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s31"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s31"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s32">
+        <td><div class="subject-name">Neurología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s32" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s32"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s32"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s33">
+        <td><div class="subject-name">Oftalmología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s33" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s33"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s33"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s34">
+        <td><div class="subject-name">Ortopedia y Traumatología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s34" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s34"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s34"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s35">
+        <td><div class="subject-name">Otorrinolaringología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s35" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s35"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s35"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s36">
+        <td><div class="subject-name">Psiquiatría Módulo 1</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s36" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s36"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s36"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s37">
+        <td><div class="subject-name">Salud Pública Módulo 1</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s37" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s37"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s37"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s38">
+        <td><div class="subject-name">Urología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>40 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s38" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s38"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s38"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s39">
+        <td><div class="subject-name">Bioquímica Clínica I</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s39" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s39"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s39"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s40">
+        <td><div class="subject-name">Filosofía Médica</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s40" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s40"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s40"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s41">
+        <td><div class="subject-name">Medicina General y Familiar</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>70 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s41" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s41"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s41"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s42">
+        <td><div class="subject-name">Nutrición Clínica</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>30 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s42" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s42"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s42"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr></tbody>
+      </table></div>
+    </article>
+<article class="card year-section" data-year="5">
+      <div class="year-header">
+        <div class="year-title"><span class="year-number">5</span><div><h2>5º ano</h2><p>20 matérias</p></div></div>
+        <div class="year-stats">0 com final aprovado</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+        <tbody><tr data-id="s43">
+        <td><div class="subject-name">Cirugía II</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>130 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s43" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s43"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s43"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s44">
+        <td><div class="subject-name">Deontología Médica y Medicina Legal</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s44" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s44"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s44"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s45">
+        <td><div class="subject-name">Diagnóstico y Terapéutica por Imágenes Módulo 2</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>45 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s45" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s45"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s45"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s46">
+        <td><div class="subject-name">Ginecología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>80 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s46" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s46"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s46"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s47">
+        <td><div class="subject-name">Medicina Interna II</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>210 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s47" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s47"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s47"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s48">
+        <td><div class="subject-name">Obstetricia</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s48" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s48"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s48"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s49">
+        <td><div class="subject-name">Pediatría</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>200 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s49" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s49"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s49"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s50">
+        <td><div class="subject-name">Psiquiatría Módulo 2</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s50" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s50"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s50"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s51">
+        <td><div class="subject-name">Salud Pública Módulo 2</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s51" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s51"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s51"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s52">
+        <td><div class="subject-name">Terapia Intensiva</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s52" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s52"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s52"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s53">
+        <td><div class="subject-name">Toxicología</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Bimestral</td><td><strong>35 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s53" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s53"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s53"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s54">
+        <td><div class="subject-name">Bioética</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s54" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s54"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s54"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s55">
+        <td><div class="subject-name">Bioquímica Clínica II</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s55" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s55"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s55"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s56">
+        <td><div class="subject-name">Calidad de la Atención Médica</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>64 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s56" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s56"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s56"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s57">
+        <td><div class="subject-name">Cirugía de Tórax</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Bimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s57" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s57"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s57"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s58">
+        <td><div class="subject-name">Discapacidad Intelectual</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s58" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s58"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s58"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s59">
+        <td><div class="subject-name">El paciente con enfermedad crónica de alto impacto familiar</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>64 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s59" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s59"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s59"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s60">
+        <td><div class="subject-name">Enfermedades poco frecuentes en medicina</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>50 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s60" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s60"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s60"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s61">
+        <td><div class="subject-name">Neurocirugía</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Cuatrimestral</td><td><strong>60 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s61" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s61"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s61"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr><tr data-id="s62">
+        <td><div class="subject-name">Trasplante de Órganos</div><div class="subject-meta"><span class="pill optional">Optativa</span></div></td>
+        <td>Semestral</td><td><strong>100 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s62" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s62"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s62"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr></tbody>
+      </table></div>
+    </article>
+<article class="card year-section" data-year="6">
+      <div class="year-header">
+        <div class="year-title"><span class="year-number">6</span><div><h2>6º ano</h2><p>1 matérias</p></div></div>
+        <div class="year-stats">0 com final aprovado</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+        <tbody><tr data-id="s63">
+        <td><div class="subject-name">Práctica Final Obligatoria</div><div class="subject-meta"><span class="pill required">Obrigatória</span></div></td>
+        <td>Anual</td><td><strong>1400 h</strong></td>
+        <td><div class="status-group fallback-status">
+          <label class="status-btn active"><input type="radio" name="fallback-s63" checked> Não cursei</label>
+          <label class="status-btn"><input type="radio" name="fallback-s63"> Cursada</label>
+          <label class="status-btn"><input type="radio" name="fallback-s63"> Final aprovado</label>
+        </div></td>
+        <td><input class="date-input" type="date"></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…"></td>
+      </tr></tbody>
+      </table></div>
+    </article>
+</section>
+    <noscript><p class="card" style="padding:16px">A prévia está em modo sem JavaScript. Você ainda pode marcar as opções nesta sessão, mas para salvar automaticamente abra o arquivo no navegador.</p></noscript>
+    <div id="empty" class="card empty">Nenhuma matéria corresponde aos filtros escolhidos.</div>
+
+    <p class="footnote">Grade carregada com base no plano de estudos RM 578/25 exibido pela UNLP. O contador de 210 horas considera as optativas marcadas como “Final aprovado”. Este painel é pessoal e não substitui o SIU Guaraní nem a validação acadêmica da faculdade.</p>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const subjects = [
+      {y:1,n:'Anatomía',r:'Anual',h:250,t:'required'},
+      {y:1,n:'Biología',r:'Anual',h:60,t:'required'},
+      {y:1,n:'Ciencias Sociales y Medicina',r:'Cuatrimestral',h:60,t:'required'},
+      {y:1,n:'Citología, Histología y Embriología',r:'Anual',h:190,t:'required'},
+      {y:1,n:'Informática Básica',r:'Bimestral',h:50,t:'required'},
+      {y:1,n:'Ciencias Exactas',r:'Cuatrimestral',h:60,t:'optional'},
+      {y:1,n:'Seminario en Investigación Científica',r:'Cuatrimestral',h:50,t:'optional'},
+      {y:2,n:'Bioquímica y Biología Molecular',r:'Anual',h:250,t:'required'},
+      {y:2,n:'Epidemiología',r:'Bimestral',h:50,t:'required'},
+      {y:2,n:'Fisiología y Física Biológica',r:'Anual',h:250,t:'required'},
+      {y:2,n:'Psicología Médica',r:'Bimestral',h:60,t:'required'},
+      {y:2,n:'Ecología Humana y Promoción de la Salud',r:'Bimestral',h:50,t:'optional'},
+      {y:2,n:'Historia de la Medicina',r:'Bimestral',h:60,t:'optional'},
+      {y:3,n:'Farmacología Básica',r:'Anual',h:140,t:'required'},
+      {y:3,n:'Informática Médica',r:'Bimestral',h:50,t:'required'},
+      {y:3,n:'Microbiología y Parasitología',r:'Anual',h:150,t:'required'},
+      {y:3,n:'Patología',r:'Anual',h:210,t:'required'},
+      {y:3,n:'Salud y Medicina Comunitaria',r:'Cuatrimestral',h:40,t:'required'},
+      {y:3,n:'Semiología',r:'Anual',h:200,t:'required'},
+      {y:3,n:'Inglés Médico',r:'Anual',h:60,t:'required'},
+      {y:3,n:'Genética',r:'Bimestral',h:50,t:'optional'},
+      {y:3,n:'Inmunología',r:'Bimestral',h:50,t:'optional'},
+      {y:3,n:'Salud Ambiental',r:'Bimestral',h:50,t:'optional'},
+      {y:3,n:'Estadística Aplicada a Ciencias de la Salud',r:'Cuatrimestral',h:60,t:'optional'},
+      {y:3,n:'Neuroanatomía Semiológica',r:'Trimestral',h:60,t:'optional'},
+      {y:4,n:'Cirugía I',r:'Bimestral',h:130,t:'required'},
+      {y:4,n:'Dermatología',r:'Bimestral',h:40,t:'required'},
+      {y:4,n:'Diagnóstico y Terapéutica por Imágenes Módulo 1',r:'Bimestral',h:50,t:'required'},
+      {y:4,n:'Farmacología Aplicada',r:'Cuatrimestral',h:100,t:'required'},
+      {y:4,n:'Infectología',r:'Bimestral',h:80,t:'required'},
+      {y:4,n:'Medicina Interna I',r:'Anual',h:210,t:'required'},
+      {y:4,n:'Neurología',r:'Bimestral',h:40,t:'required'},
+      {y:4,n:'Oftalmología',r:'Bimestral',h:40,t:'required'},
+      {y:4,n:'Ortopedia y Traumatología',r:'Bimestral',h:40,t:'required'},
+      {y:4,n:'Otorrinolaringología',r:'Bimestral',h:40,t:'required'},
+      {y:4,n:'Psiquiatría Módulo 1',r:'Bimestral',h:60,t:'required'},
+      {y:4,n:'Salud Pública Módulo 1',r:'Cuatrimestral',h:60,t:'required'},
+      {y:4,n:'Urología',r:'Bimestral',h:40,t:'required'},
+      {y:4,n:'Bioquímica Clínica I',r:'Bimestral',h:50,t:'optional'},
+      {y:4,n:'Filosofía Médica',r:'Bimestral',h:50,t:'optional'},
+      {y:4,n:'Medicina General y Familiar',r:'Cuatrimestral',h:70,t:'optional'},
+      {y:4,n:'Nutrición Clínica',r:'Cuatrimestral',h:30,t:'optional'},
+      {y:5,n:'Cirugía II',r:'Bimestral',h:130,t:'required'},
+      {y:5,n:'Deontología Médica y Medicina Legal',r:'Bimestral',h:60,t:'required'},
+      {y:5,n:'Diagnóstico y Terapéutica por Imágenes Módulo 2',r:'Bimestral',h:45,t:'required'},
+      {y:5,n:'Ginecología',r:'Cuatrimestral',h:80,t:'required'},
+      {y:5,n:'Medicina Interna II',r:'Anual',h:210,t:'required'},
+      {y:5,n:'Obstetricia',r:'Bimestral',h:60,t:'required'},
+      {y:5,n:'Pediatría',r:'Anual',h:200,t:'required'},
+      {y:5,n:'Psiquiatría Módulo 2',r:'Bimestral',h:60,t:'required'},
+      {y:5,n:'Salud Pública Módulo 2',r:'Cuatrimestral',h:60,t:'required'},
+      {y:5,n:'Terapia Intensiva',r:'Cuatrimestral',h:60,t:'required'},
+      {y:5,n:'Toxicología',r:'Bimestral',h:35,t:'required'},
+      {y:5,n:'Bioética',r:'Bimestral',h:50,t:'optional'},
+      {y:5,n:'Bioquímica Clínica II',r:'Bimestral',h:50,t:'optional'},
+      {y:5,n:'Calidad de la Atención Médica',r:'Cuatrimestral',h:64,t:'optional'},
+      {y:5,n:'Cirugía de Tórax',r:'Bimestral',h:60,t:'optional'},
+      {y:5,n:'Discapacidad Intelectual',r:'Cuatrimestral',h:60,t:'optional'},
+      {y:5,n:'El paciente con enfermedad crónica de alto impacto familiar',r:'Cuatrimestral',h:64,t:'optional'},
+      {y:5,n:'Enfermedades poco frecuentes en medicina',r:'Cuatrimestral',h:50,t:'optional'},
+      {y:5,n:'Neurocirugía',r:'Cuatrimestral',h:60,t:'optional'},
+      {y:5,n:'Trasplante de Órganos',r:'Semestral',h:100,t:'optional'},
+      {y:6,n:'Práctica Final Obligatoria',r:'Anual',h:1400,t:'required'}
+    ].map((s,i)=>({...s,id:`s${i+1}`}));
+
+    const KEY = 'tracker-medicina-unlp-v1';
+    let state = loadState();
+    const $ = (id) => document.getElementById(id);
+
+    function loadState(){
+      try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+      catch { return {}; }
+    }
+    function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+    function getRecord(id){ return state[id] || {status:'pending',date:'',note:''}; }
+    function updateRecord(id, patch){ state[id] = {...getRecord(id), ...patch}; saveState(); updateUI(); }
+    function esc(v=''){ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+    function yearLabel(y){ return y === 1 ? '1º ano' : `${y}º ano`; }
+
+    function initFilters(){
+      for(let y=1;y<=6;y++) $('yearFilter').insertAdjacentHTML('beforeend', `<option value="${y}">${yearLabel(y)}</option>`);
+      ['search','yearFilter','typeFilter','statusFilter'].forEach(id => $(id).addEventListener(id==='search'?'input':'change', render));
+    }
+
+    function filteredSubjects(){
+      const q = $('search').value.trim().toLocaleLowerCase('pt-BR');
+      const y = $('yearFilter').value, t = $('typeFilter').value, st = $('statusFilter').value;
+      return subjects.filter(s => {
+        const rec = getRecord(s.id);
+        return (!q || `${s.n} ${s.r}`.toLocaleLowerCase('pt-BR').includes(q)) &&
+          (y==='all' || String(s.y)===y) && (t==='all' || s.t===t) && (st==='all' || rec.status===st);
+      });
+    }
+
+    function render(){
+      const filtered = filteredSubjects();
+      const groups = [...new Set(filtered.map(s=>s.y))];
+      $('content').innerHTML = groups.map(y => {
+        const list = filtered.filter(s=>s.y===y);
+        const finals = list.filter(s=>getRecord(s.id).status==='final').length;
+        return `<article class="card year-section" data-year="${y}">
+          <div class="year-header">
+            <div class="year-title"><span class="year-number">${y}</span><div><h2>${yearLabel(y)}</h2><p>${list.length} matéria${list.length!==1?'s':''} exibida${list.length!==1?'s':''}</p></div></div>
+            <div class="year-stats">${finals} com final aprovado</div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Matéria</th><th>Modalidade</th><th>Carga</th><th>Status</th><th>Data do final</th><th>Observação</th></tr></thead>
+            <tbody>${list.map(rowHTML).join('')}</tbody>
+          </table></div>
+        </article>`;
+      }).join('');
+      $('empty').style.display = filtered.length ? 'none' : 'block';
+      bindRows();
+    }
+
+    function rowHTML(s){
+      const r = getRecord(s.id);
+      return `<tr data-id="${s.id}" class="${r.status==='final'?'final-ok':r.status==='regular'?'regular-ok':''}">
+        <td><div class="subject-name">${esc(s.n)}</div><div class="subject-meta"><span class="pill ${s.t}">${s.t==='required'?'Obrigatória':'Optativa'}</span></div></td>
+        <td>${esc(s.r)}</td><td><strong>${s.h} h</strong></td>
+        <td><div class="status-group">
+          <button class="status-btn ${r.status==='pending'?'active':''}" data-state="pending">Não cursei</button>
+          <button class="status-btn ${r.status==='regular'?'active':''}" data-state="regular">Cursada</button>
+          <button class="status-btn ${r.status==='final'?'active':''}" data-state="final">Final aprovado</button>
+        </div></td>
+        <td><input class="date-input" type="date" value="${esc(r.date)}" ${r.status!=='final'?'disabled':''}></td>
+        <td><input class="note-input" type="text" maxlength="120" placeholder="Nota, professor…" value="${esc(r.note)}"></td>
+      </tr>`;
+    }
+
+    function bindRows(){
+      document.querySelectorAll('tr[data-id]').forEach(tr => {
+        const id = tr.dataset.id;
+        tr.querySelectorAll('.status-btn').forEach(btn => btn.addEventListener('click', () => {
+          const status = btn.dataset.state;
+          const current = getRecord(id);
+          updateRecord(id, {status, date: status==='final' ? current.date : ''});
+        }));
+        tr.querySelector('.date-input').addEventListener('change', e => updateRecord(id,{date:e.target.value}));
+        tr.querySelector('.note-input').addEventListener('change', e => updateRecord(id,{note:e.target.value.trim()}));
+      });
+    }
+
+    function updateSummary(){
+      const records = subjects.map(s=>({s,r:getRecord(s.id)}));
+      const regular = records.filter(x=>x.r.status==='regular'||x.r.status==='final').length;
+      const finals = records.filter(x=>x.r.status==='final').length;
+      const optRegular = records.filter(x=>x.s.t==='optional'&&(x.r.status==='regular'||x.r.status==='final')).reduce((a,x)=>a+x.s.h,0);
+      const optFinal = records.filter(x=>x.s.t==='optional'&&x.r.status==='final').reduce((a,x)=>a+x.s.h,0);
+      const total = subjects.length;
+      const rp = Math.round(regular/total*100), fp = Math.round(finals/total*100), op = Math.min(100,Math.round(optFinal/210*100));
+      $('regularCount').textContent = `${regular} / ${total}`;
+      $('regularNote').textContent = `${rp}% das matérias cursadas`;
+      $('regularBar').style.width = `${rp}%`;
+      $('finalCount').textContent = `${finals} / ${total}`;
+      $('finalNote').textContent = `${fp}% com final aprovado`;
+      $('finalBar').style.width = `${fp}%`;
+      $('heroPercent').textContent = `${fp}%`;
+      $('optionalRegularHours').textContent = `${optRegular} h`;
+      $('optionalRegularBar').style.width = `${Math.min(100,optRegular/210*100)}%`;
+      $('optionalFinalHours').textContent = `${optFinal} / 210 h`;
+      $('optionalFinalBar').style.width = `${op}%`;
+      $('optionalNote').textContent = optFinal>=210 ? `Meta alcançada · ${optFinal-210} h excedentes` : `Faltam ${210-optFinal} horas`;
+    }
+
+    function updateUI(){ updateSummary(); render(); }
+    function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove('show'),2600); }
+
+    $('exportBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify({app:'Tracker Medicina UNLP',version:1,exportedAt:new Date().toISOString(),state},null,2)],{type:'application/json'});
+      const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`medicina-unlp-backup-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href); toast('Backup exportado.');
+    });
+    $('importBtn').addEventListener('click', () => $('importFile').click());
+    $('importFile').addEventListener('change', async e => {
+      const file=e.target.files[0]; if(!file) return;
+      try { const data=JSON.parse(await file.text()); state=data.state||data; saveState(); updateUI(); toast('Backup restaurado.'); }
+      catch { alert('Não foi possível importar esse arquivo.'); }
+      e.target.value='';
+    });
+    $('resetBtn').addEventListener('click', () => {
+      if(confirm('Apagar todas as marcações, datas e observações?')) { state={}; saveState(); updateUI(); toast('Painel zerado.'); }
+    });
+
+    initFilters();
+    updateUI();
+  </script>
+</body>
+</html>
