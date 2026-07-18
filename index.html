@@ -1093,8 +1093,7 @@
   const optionalHours = records
     .filter(
       ({ subject, record }) =>
-        subject.t === "optional" &&
-        (record.status === "regular" || record.status === "final")
+        subject.t === "optional" && record.status === "final"
     )
     .reduce((total, { subject }) => total + Number(subject.h || 0), 0);
 
